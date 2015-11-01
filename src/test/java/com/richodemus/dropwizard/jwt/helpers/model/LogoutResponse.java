@@ -3,11 +3,12 @@ package com.richodemus.dropwizard.jwt.helpers.model;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public class CreateUserResponse
+public class LogoutResponse
 {
 	private final Result result;
+
 	@JsonCreator
-	public CreateUserResponse(@JsonProperty("result") Result result)
+	public LogoutResponse(@JsonProperty("result") Result result)
 	{
 		this.result = result;
 	}

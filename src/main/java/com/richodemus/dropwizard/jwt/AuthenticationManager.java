@@ -36,6 +36,7 @@ public class AuthenticationManager
 		claims.put("user", username);
 		claims.put("role", role.stringValue());
 
+		//todo set all the other fields such as issuer
 		final JWTSigner.Options options = new JWTSigner.Options();
 		options.setExpirySeconds(60 * 10);
 		return new Token(signer.sign(claims, options));
@@ -54,5 +55,10 @@ public class AuthenticationManager
 
 		//todo think more about this, is this enough?
 		return generateToken(token.getUsername(), new Role(token.getRole()));
+	}
+
+	public void logout(Token token)
+	{
+
 	}
 }

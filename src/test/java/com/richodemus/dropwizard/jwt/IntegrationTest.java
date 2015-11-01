@@ -5,6 +5,7 @@ import com.richodemus.dropwizard.jwt.helpers.dropwizard.TestConfiguration;
 import com.richodemus.dropwizard.jwt.helpers.model.CreateUserRequest;
 import com.richodemus.dropwizard.jwt.helpers.model.CreateUserResponse;
 import com.richodemus.dropwizard.jwt.helpers.model.LoginRequest;
+import com.richodemus.dropwizard.jwt.helpers.model.LogoutResponse;
 import com.richodemus.dropwizard.jwt.model.Role;
 import io.dropwizard.testing.DropwizardTestSupport;
 import io.dropwizard.testing.ResourceHelpers;
@@ -17,6 +18,7 @@ import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.Entity;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.fail;
 
 public class IntegrationTest
 {
@@ -35,11 +37,7 @@ public class IntegrationTest
 	{
 		target = new DropwizardTestSupport<>(TestApp.class, ResourceHelpers.resourceFilePath("conf.yaml"));
 		target.before();
-		final CreateUserResponse result = ClientBuilder.newClient()
-				.target("http://localhost:" + target.getLocalPort())
-				.path("api/users/new")
-				.request()
-				.post(Entity.json(new CreateUserRequest(EXISTING_USER, EXISTING_USER_PASSWORD, EXISTING_USER_ROLE.stringValue())), CreateUserResponse.class);
+		final CreateUserResponse result = createUser(EXISTING_USER_ROLE.stringValue(), EXISTING_USER, EXISTING_USER_PASSWORD);
 		assertThat(result.getResult()).isEqualTo(CreateUserResponse.Result.OK);
 	}
 
@@ -53,19 +51,11 @@ public class IntegrationTest
 	public void shouldCreateUser() throws Exception
 	{
 		final String expectedRole = "user";
-		final CreateUserResponse result = ClientBuilder.newClient()
-				.target("http://localhost:" + target.getLocalPort())
-				.path("api/users/new")
-				.request()
-				.post(Entity.json(new CreateUserRequest(NON_EXISTING_USER, NON_EXISTING_USER_PASSWORD, expectedRole)), CreateUserResponse.class);
+
+		final CreateUserResponse result = createUser(expectedRole, NON_EXISTING_USER, NON_EXISTING_USER_PASSWORD);
 		assertThat(result.getResult()).isEqualTo(CreateUserResponse.Result.OK);
 
-		final Token result2 = ClientBuilder.newClient()
-				.target("http://localhost:" + target.getLocalPort())
-				.path("api/users/login")
-				.request()
-				.post(Entity.json(new LoginRequest(NON_EXISTING_USER, NON_EXISTING_USER_PASSWORD)), Token.class);
-
+		final Token result2 = login(NON_EXISTING_USER, NON_EXISTING_USER_PASSWORD);
 		assertThat(result2.getUsername()).isEqualTo(NON_EXISTING_USER);
 		assertThat(result2.getRole()).isEqualTo(expectedRole);
 
@@ -74,54 +64,83 @@ public class IntegrationTest
 	@Test(expected = ForbiddenException.class)
 	public void shouldThrowForbiddenExceptionWhenUserAlreadyExists() throws Exception
 	{
-		ClientBuilder.newClient()
-				.target("http://localhost:" + target.getLocalPort())
-				.path("api/users/login")
-				.request()
-				.post(Entity.json(new LoginRequest(NON_EXISTING_USER, NON_EXISTING_USER_PASSWORD)), Token.class);
+		login(NON_EXISTING_USER, NON_EXISTING_USER_PASSWORD);
 	}
 
 	@Test
 	public void shouldReturnValidTokenOnLogin() throws Exception
 	{
-		//First login
-		final Token firstToken = ClientBuilder.newClient()
-				.target("http://localhost:" + target.getLocalPort())
-				.path("api/users/login")
-				.request()
-				.post(Entity.json(new LoginRequest(EXISTING_USER, EXISTING_USER_PASSWORD)), Token.class);
+		final Token firstToken = login(EXISTING_USER, EXISTING_USER_PASSWORD);
 
 		//if refresh doesn't throw an exception, the first token was valid
-		ClientBuilder.newClient()
-				.target("http://localhost:" + target.getLocalPort())
-				.path("api/users/refresh-token")
-				.request()
-				.header("x-token-jwt", firstToken.getRaw())
-				.post(Entity.json(null), Token.class);
-
+		refreshToken(firstToken);
 	}
 
 	@Test
 	public void shouldReturnNewTokenWhenRefreshing() throws Exception
 	{
-		//First login
-		final Token firstToken = ClientBuilder.newClient()
-				.target("http://localhost:" + target.getLocalPort())
-				.path("api/users/login")
-				.request()
-				.post(Entity.json(new LoginRequest(EXISTING_USER, EXISTING_USER_PASSWORD)), Token.class);
+		final Token firstToken = login(EXISTING_USER, EXISTING_USER_PASSWORD);
 
 		//There is no random element to tokens, so we need a new expiration or the new one will be identical
 		Thread.sleep(1100L);
 
-		//refresh the token
-		final Token newToken = ClientBuilder.newClient()
+		final Token newToken = refreshToken(firstToken);
+
+		assertThat(firstToken.getRaw()).isNotEqualTo(newToken.getRaw());
+	}
+
+	@Test
+	public void shouldBlacklistTokenWhenLoggingOut() throws Exception
+	{
+		final Token token = login(EXISTING_USER, EXISTING_USER_PASSWORD);
+		final LogoutResponse response = logout(token);
+		assertThat(response.getResult()).isEqualTo(LogoutResponse.Result.OK);
+		try
+		{
+			refreshToken(token);
+			fail("Should've thrown ForbiddenException");
+		}
+		catch (ForbiddenException e)
+		{
+			// ok
+		}
+	}
+
+	private Token login(String existingUser, String existingUserPassword)
+	{
+		return ClientBuilder.newClient()
+				.target("http://localhost:" + target.getLocalPort())
+				.path("api/users/login")
+				.request()
+				.post(Entity.json(new LoginRequest(existingUser, existingUserPassword)), Token.class);
+	}
+
+	private CreateUserResponse createUser(String expectedRole, String nonExistingUser, String nonExistingUserPassword)
+	{
+		return ClientBuilder.newClient()
+				.target("http://localhost:" + target.getLocalPort())
+				.path("api/users/new")
+				.request()
+				.post(Entity.json(new CreateUserRequest(nonExistingUser, nonExistingUserPassword, expectedRole)), CreateUserResponse.class);
+	}
+
+	private Token refreshToken(Token token)
+	{
+		return ClientBuilder.newClient()
 				.target("http://localhost:" + target.getLocalPort())
 				.path("api/users/refresh-token")
 				.request()
-				.header("x-token-jwt", firstToken.getRaw())
+				.header("x-token-jwt", token.getRaw())
 				.post(Entity.json(null), Token.class);
+	}
 
-		assertThat(firstToken.getRaw()).isNotEqualTo(newToken.getRaw());
+	private LogoutResponse logout(Token token)
+	{
+		return ClientBuilder.newClient()
+				.target("http://localhost:" + target.getLocalPort())
+				.path("api/users/logout")
+				.request()
+				.header("x-token-jwt", token.getRaw())
+				.post(Entity.json(null), LogoutResponse.class);
 	}
 }
