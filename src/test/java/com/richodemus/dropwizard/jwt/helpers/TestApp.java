@@ -9,8 +9,9 @@ public class TestApp extends Application<TestConfiguration>
 	@Override
 	public void run(TestConfiguration configuration, Environment environment) throws Exception
 	{
-		final AuthenticationManager authenticationManager = new AuthenticationManager(new UserServiceImpl());
-		environment.jersey().register(new LoginResource(authenticationManager));
+		final UserServiceImpl userService = new UserServiceImpl();
+		final AuthenticationManager authenticationManager = new AuthenticationManager(userService);
+		environment.jersey().register(new LoginResource(authenticationManager, userService));
 		environment.jersey().register(ConfidentalResource.class);
 
 	}

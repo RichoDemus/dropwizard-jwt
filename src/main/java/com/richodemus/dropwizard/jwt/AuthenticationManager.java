@@ -5,6 +5,7 @@ import com.richodemus.dropwizard.jwt.model.Role;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 public class AuthenticationManager
 {
@@ -15,10 +16,10 @@ public class AuthenticationManager
 		this.userService = userService;
 	}
 
-	public Token login(String username, String password)
+	public Optional<Token> login(String username, String password)
 	{
-		final Role role = userService.login(username, password);
-		return generateToken(username, role);
+		return userService.login(username, password)
+				.map(role -> generateToken(username, role));
 	}
 
 	private Token generateToken(String username, Role role)
