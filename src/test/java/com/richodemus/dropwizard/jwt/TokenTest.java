@@ -10,14 +10,14 @@ public class TokenTest
 	@Test
 	public void shouldParseUsername() throws Exception
 	{
-		final Token target = TokenUtil.VALID_JWT_TOKEN;
+		final Token target = TokenUtil.VALID_ADMIN_JWT_TOKEN;
 		assertThat(target.getUsername()).isEqualTo("username");
 	}
 
 	@Test
 	public void shouldParseRole() throws Exception
 	{
-		final Token target = TokenUtil.VALID_JWT_TOKEN;
+		final Token target = TokenUtil.VALID_ADMIN_JWT_TOKEN;
 		assertThat(target.getRole()).isEqualTo("admin");
 	}
 }

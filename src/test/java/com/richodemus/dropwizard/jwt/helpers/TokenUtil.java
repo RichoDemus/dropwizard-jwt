@@ -12,7 +12,12 @@ public class TokenUtil
 	/**
 	 * Normal token except it has no expiration date, the secret is secret_used_for_testing
 	 */
-	public static final Token VALID_JWT_TOKEN = new Token("eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyIjoidXNlcm5hbWUiLCJyb2xlIjoiYWRtaW4ifQ.4A96ZeAOjDVeDjgJ5jPBYz9uZkPKymXCEalU-fy1naI");
+	public static final Token VALID_ADMIN_JWT_TOKEN = new Token("eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyIjoidXNlcm5hbWUiLCJyb2xlIjoiYWRtaW4ifQ.4A96ZeAOjDVeDjgJ5jPBYz9uZkPKymXCEalU-fy1naI");
+
+	/**
+	 * Normal token except it has no expiration date, the secret is secret_used_for_testing
+	 */
+	public static final Token VALID_USER_JWT_TOKEN = new Token("eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyIjoidXNlcm5hbWUiLCJyb2xlIjoidXNlciJ9.xciSe5aT_-LjjSs7sqtyo9J2wuqR4Bl4kb4scjcSTvQ");
 
 	/**
 	 * Normal token exect it has expired (unless your system clock is bonkers, the secret is secret_used_for_testing

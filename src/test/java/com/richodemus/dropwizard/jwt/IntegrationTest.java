@@ -1,10 +1,13 @@
 package com.richodemus.dropwizard.jwt;
 
+import com.richodemus.dropwizard.jwt.helpers.AccessControlledPage;
 import com.richodemus.dropwizard.jwt.helpers.LoginPage;
+import com.richodemus.dropwizard.jwt.helpers.TokenUtil;
 import com.richodemus.dropwizard.jwt.helpers.dropwizard.TestApp;
 import com.richodemus.dropwizard.jwt.helpers.dropwizard.TestConfiguration;
 import com.richodemus.dropwizard.jwt.helpers.model.CreateUserResponse;
 import com.richodemus.dropwizard.jwt.helpers.model.LogoutResponse;
+import com.richodemus.dropwizard.jwt.helpers.resources.AccessControlledResource;
 import com.richodemus.dropwizard.jwt.model.Role;
 import io.dropwizard.testing.DropwizardTestSupport;
 import io.dropwizard.testing.ResourceHelpers;
@@ -26,10 +29,11 @@ public class IntegrationTest
 
 	private static final String NON_EXISTING_USER = "non_existing_user";
 	private static final String NON_EXISTING_USER_PASSWORD = "non_existing_user_password";
-	
+
 
 	private DropwizardTestSupport<TestConfiguration> target;
 	private LoginPage loginPage;
+	private AccessControlledPage controlledPage;
 
 	@Before
 	public void setUp() throws Exception
@@ -37,6 +41,7 @@ public class IntegrationTest
 		target = new DropwizardTestSupport<>(TestApp.class, ResourceHelpers.resourceFilePath("conf.yaml"));
 		target.before();
 		loginPage = new LoginPage(target.getLocalPort());
+		controlledPage = new AccessControlledPage(target.getLocalPort());
 		final CreateUserResponse result = loginPage.createUser(EXISTING_USER_ROLE.stringValue(), EXISTING_USER, EXISTING_USER_PASSWORD);
 		assertThat(result.getResult()).isEqualTo(CreateUserResponse.Result.OK);
 	}
@@ -154,5 +159,47 @@ public class IntegrationTest
 		catch (BadRequestException ignored)
 		{
 		}
+	}
+
+	@Test
+	public void shouldBeAbleToAccessTheAnyoneMethodWithoutLogginIn() throws Exception
+	{
+		final AccessControlledResource.Response result = controlledPage.anyone();
+		assertThat(result).isEqualTo(AccessControlledResource.Response.ALLOWED_FOR_EVERYONE);
+	}
+
+	@Test
+	public void shouldBeAbleToAccessTheAnyoneMethodWhenLoggedIn() throws Exception
+	{
+		final AccessControlledResource.Response result = controlledPage.anyone(TokenUtil.VALID_USER_JWT_TOKEN);
+		assertThat(result).isEqualTo(AccessControlledResource.Response.ALLOWED_FOR_EVERYONE);
+	}
+
+	@Test
+	public void shouldBeAbleToAccessTheLoggedInMethodWhenLoggedInAsUser() throws Exception
+	{
+		final AccessControlledResource.Response result = controlledPage.loggedIn(TokenUtil.VALID_USER_JWT_TOKEN);
+		assertThat(result).isEqualTo(AccessControlledResource.Response.ALLOWED_FOR_LOGGED_IN_USERS);
+	}
+
+	@Test
+	public void shouldBeAbleToAccessTheUserAndAdminMethodWhenLoggedInAsUser() throws Exception
+	{
+		final AccessControlledResource.Response result = controlledPage.userAndAdmin(TokenUtil.VALID_USER_JWT_TOKEN);
+		assertThat(result).isEqualTo(AccessControlledResource.Response.ALLOWED_FOR_ADMINS_AND_USERS);
+	}
+
+	@Test
+	public void shouldBeAbleToAccessTheUserAndAdminMethodWhenLoggedInAsAdmin() throws Exception
+	{
+		final AccessControlledResource.Response result = controlledPage.userAndAdmin(TokenUtil.VALID_ADMIN_JWT_TOKEN);
+		assertThat(result).isEqualTo(AccessControlledResource.Response.ALLOWED_FOR_ADMINS_AND_USERS);
+	}
+
+	@Test
+	public void shouldBeAbleToAccessTheAdminMethodWhenLoggedInAsAdmin() throws Exception
+	{
+		final AccessControlledResource.Response result = controlledPage.admins(TokenUtil.VALID_ADMIN_JWT_TOKEN);
+		assertThat(result).isEqualTo(AccessControlledResource.Response.ADMINS_ONLY);
 	}
 }
