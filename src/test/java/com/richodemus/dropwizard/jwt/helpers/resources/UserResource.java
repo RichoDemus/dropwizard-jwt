@@ -10,6 +10,7 @@ import com.richodemus.dropwizard.jwt.helpers.model.LogoutResponse;
 import com.richodemus.dropwizard.jwt.model.Role;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.ws.rs.BadRequestException;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.ForbiddenException;
 import javax.ws.rs.POST;
@@ -56,7 +57,7 @@ public class UserResource
 		//todo there is a standard for how to add the token to the header, use it
 		final String rawToken = request.getHeader("x-token-jwt");
 		return authenticationManager.refreshToken(new Token(rawToken))
-				.orElseThrow(ForbiddenException::new);
+				.orElseThrow(BadRequestException::new);
 	}
 
 	@POST

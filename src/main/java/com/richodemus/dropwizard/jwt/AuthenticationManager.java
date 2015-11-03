@@ -2,15 +2,10 @@ package com.richodemus.dropwizard.jwt;
 
 import com.auth0.jwt.JWTSigner;
 import com.auth0.jwt.JWTVerifier;
-import com.auth0.jwt.JWTVerifyException;
 import com.richodemus.dropwizard.jwt.model.Role;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
-import java.security.SignatureException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -67,9 +62,10 @@ public class AuthenticationManager
 		{
 			final Map<String, Object> claims = new JWTVerifier(SecretKeeper.SECRET).verify(token.getRaw());
 		}
-		catch (NoSuchAlgorithmException | InvalidKeyException | SignatureException | IOException | JWTVerifyException e)
+		catch (Exception e)
 		{
-			e.printStackTrace();
+			logger.error("Exception when validating token", e);
+			return Optional.empty();
 		}
 		//todo think more about this, is this enough validation?
 

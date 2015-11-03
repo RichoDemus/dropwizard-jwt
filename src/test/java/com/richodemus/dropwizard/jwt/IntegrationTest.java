@@ -13,6 +13,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import javax.ws.rs.BadRequestException;
 import javax.ws.rs.ForbiddenException;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.Entity;
@@ -62,9 +63,16 @@ public class IntegrationTest
 	}
 
 	@Test(expected = ForbiddenException.class)
-	public void shouldThrowForbiddenExceptionWhenUserAlreadyExists() throws Exception
+	public void shouldThrowForbiddenExceptionWhenUserCredentialsAreWrong() throws Exception
 	{
 		login(NON_EXISTING_USER, NON_EXISTING_USER_PASSWORD);
+	}
+
+	@Test(expected = BadRequestException.class)
+	public void shouldThrowBadRequestExceptionWhenRefreshingUsingAnInvalidToken() throws Exception
+	{
+		refreshToken(new Token("invalidino tokenirino cappuchino"));
+
 	}
 
 	@Test
@@ -101,9 +109,9 @@ public class IntegrationTest
 		try
 		{
 			refreshToken(firstToken);
-			fail("Should've thrown ForbiddenException");
+			fail("Should've thrown BadRequestException");
 		}
-		catch (ForbiddenException ignored)
+		catch (BadRequestException ignored)
 		{
 		}
 	}
@@ -142,9 +150,9 @@ public class IntegrationTest
 		try
 		{
 			refreshToken(token);
-			fail("Should've thrown ForbiddenException");
+			fail("Should've thrown BadRequestException");
 		}
-		catch (ForbiddenException ignored)
+		catch (BadRequestException ignored)
 		{
 		}
 	}

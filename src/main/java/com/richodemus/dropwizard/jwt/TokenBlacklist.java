@@ -3,6 +3,7 @@ package com.richodemus.dropwizard.jwt;
 import java.util.HashSet;
 import java.util.Set;
 
+//todo regularly check for and remove expired tokens
 public class TokenBlacklist
 {
 	private final Set<Token> blacklist;
