@@ -90,6 +90,50 @@ public class IntegrationTest
 	}
 
 	@Test
+	public void shouldBlackListOldTokenWhenReturningANewWhenRefreshing() throws Exception
+	{
+		final Token firstToken = login(EXISTING_USER, EXISTING_USER_PASSWORD);
+
+		//There is no random element to tokens, so we need a new expiration or the new one will be identical
+		Thread.sleep(1100L);
+
+		refreshToken(firstToken);
+		try
+		{
+			refreshToken(firstToken);
+			fail("Should've thrown ForbiddenException");
+		}
+		catch (ForbiddenException ignored)
+		{
+		}
+	}
+
+	/*
+		I know this is ugly, dont kill me
+		so, we need to refresh quick enough so that we get the same token
+		this is possible since there is no randomness to tokens, so if we create one in the same milisecond
+		the expiration will be the same and the tokens will be identical
+	 */
+	@Test(timeout = 10000)
+	public void shouldNotBlacklistOldTokenWhenReturningSameTokenWhenRefreshing() throws Exception
+	{
+		Token firstToken;
+		Token sameToken;
+		do
+		{
+			firstToken = login(EXISTING_USER, EXISTING_USER_PASSWORD);
+			sameToken = refreshToken(firstToken);
+		}
+		while (!firstToken.equals(sameToken));
+
+		Thread.sleep(1100L);
+
+		final Token newToken = refreshToken(firstToken);
+
+		assertThat(firstToken.getRaw()).isNotEqualTo(newToken.getRaw());
+	}
+
+	@Test
 	public void shouldBlacklistTokenWhenLoggingOut() throws Exception
 	{
 		final Token token = login(EXISTING_USER, EXISTING_USER_PASSWORD);
@@ -100,9 +144,8 @@ public class IntegrationTest
 			refreshToken(token);
 			fail("Should've thrown ForbiddenException");
 		}
-		catch (ForbiddenException e)
+		catch (ForbiddenException ignored)
 		{
-			// ok
 		}
 	}
 

@@ -26,16 +26,23 @@ public class Token
 	@JsonIgnore
 	public String getUsername()
 	{
-		return get("user");
+		return getString("user");
 	}
 
 	@JsonIgnore
 	public String getRole()
 	{
-		return get("role");
+		return getString("role");
 	}
 
-	private String get(String user)
+	@JsonIgnore
+	public String getExpiration()
+	{
+		return String.valueOf(getInt("exp"));
+	}
+
+	//todo rewrite this and getInt
+	private String getString(String user)
 	{
 		try
 		{
@@ -43,6 +50,21 @@ public class Token
 
 			final Object asd = verify.get(user);
 			return (String) asd;
+		}
+		catch (Exception e)
+		{
+			throw new IllegalStateException(e);
+		}
+	}
+
+	private int getInt(String user)
+	{
+		try
+		{
+			final Map<String, Object> verify = new JWTVerifier(SecretKeeper.SECRET).verify(raw);
+
+			final Object asd = verify.get(user);
+			return (Integer) asd;
 		}
 		catch (Exception e)
 		{
@@ -69,5 +91,11 @@ public class Token
 	public int hashCode()
 	{
 		return Objects.hash(raw);
+	}
+
+	@Override
+	public String toString()
+	{
+		return getUsername() + ", " + getRole() + ", " + getExpiration();
 	}
 }

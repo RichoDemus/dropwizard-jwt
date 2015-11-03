@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 public class CreateUserResponse
 {
 	private final Result result;
+
 	@JsonCreator
 	public CreateUserResponse(@JsonProperty("result") Result result)
 	{

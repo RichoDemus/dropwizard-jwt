@@ -57,7 +57,7 @@ public class AuthenticationManager
 
 	public Optional<Token> refreshToken(Token token)
 	{
-		if(blacklist.isBlacklisted(token))
+		if (blacklist.isBlacklisted(token))
 		{
 			logger.debug("Token {} is blacklisted", token);
 			//todo maybe have a more explicit "TokenBlacklistedException"?
@@ -71,9 +71,19 @@ public class AuthenticationManager
 		{
 			e.printStackTrace();
 		}
+		//todo think more about this, is this enough validation?
 
-		//todo think more about this, is this enough?
-		return generateToken(token.getUsername(), new Role(token.getRole()));
+		final Optional<Token> maybeNewToken = generateToken(token.getUsername(), new Role(token.getRole()));
+		maybeNewToken.ifPresent(newToken -> blackListIfNotEqual(token, newToken));
+		return maybeNewToken;
+	}
+
+	private void blackListIfNotEqual(Token token, Token newToken)
+	{
+		if (!token.equals(newToken))
+		{
+			blacklist.blacklist(token);
+		}
 	}
 
 	public void logout(Token token)
