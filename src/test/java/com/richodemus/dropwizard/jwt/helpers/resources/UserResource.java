@@ -55,7 +55,8 @@ public class UserResource
 	{
 		//todo there is a standard for how to add the token to the header, use it
 		final String rawToken = request.getHeader("x-token-jwt");
-		return authenticationManager.refreshToken(new Token(rawToken));
+		return authenticationManager.refreshToken(new Token(rawToken))
+				.orElseThrow(ForbiddenException::new);
 	}
 
 	@POST
