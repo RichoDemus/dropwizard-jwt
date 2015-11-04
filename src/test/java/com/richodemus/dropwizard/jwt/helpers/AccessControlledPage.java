@@ -4,6 +4,8 @@ import com.richodemus.dropwizard.jwt.Token;
 import com.richodemus.dropwizard.jwt.helpers.resources.AccessControlledResource;
 
 import javax.ws.rs.client.ClientBuilder;
+import javax.ws.rs.client.Invocation;
+import java.util.Optional;
 
 public class AccessControlledPage
 {
@@ -14,52 +16,35 @@ public class AccessControlledPage
 		this.port = port;
 	}
 
-	public AccessControlledResource.Response anyone()
+	public AccessControlledResource.Response anyone(Optional<Token> token)
 	{
-		return ClientBuilder.newClient()
-				.target("http://localhost:" + port)
-				.path("api/controlled/anyone")
-				.request()
-				.get(AccessControlledResource.Response.class);
+		return getClient("api/controlled/anyone", token).get(AccessControlledResource.Response.class);
 	}
 
-	public AccessControlledResource.Response anyone(Token token)
+	public AccessControlledResource.Response loggedIn(Optional<Token> token)
 	{
-		return ClientBuilder.newClient()
-						.target("http://localhost:" + port)
-						.path("api/controlled/anyone")
-						.request()
-				.header("x-token-jwt", token.getRaw())
-				.get(AccessControlledResource.Response.class);
+		return getClient("api/controlled/logged-in", token).get(AccessControlledResource.Response.class);
 	}
 
-	public AccessControlledResource.Response loggedIn(Token token)
+	public AccessControlledResource.Response userAndAdmin(Optional<Token> token)
 	{
-		return ClientBuilder.newClient()
-				.target("http://localhost:" + port)
-				.path("api/controlled/logged-in")
-				.request()
-				.header("x-token-jwt", token.getRaw())
-				.get(AccessControlledResource.Response.class);
+		return getClient("api/controlled/admin-and-user", token).get(AccessControlledResource.Response.class);
 	}
 
-	public AccessControlledResource.Response userAndAdmin(Token token)
+	public AccessControlledResource.Response admins(Optional<Token> token)
 	{
-		return ClientBuilder.newClient()
-				.target("http://localhost:" + port)
-				.path("api/controlled/admin-and-user")
-				.request()
-				.header("x-token-jwt", token.getRaw())
-				.get(AccessControlledResource.Response.class);
+		return getClient("api/controlled/admins", token).get(AccessControlledResource.Response.class);
 	}
 
-	public AccessControlledResource.Response admins(Token token)
+	private Invocation.Builder getClient(String path, Optional<Token> maybeToken)
 	{
-		return ClientBuilder.newClient()
+		final Invocation.Builder builder = ClientBuilder.newClient()
 				.target("http://localhost:" + port)
-				.path("api/controlled/admins")
-				.request()
-				.header("x-token-jwt", token.getRaw())
-				.get(AccessControlledResource.Response.class);
+				.path(path)
+				.request();
+
+		return maybeToken.map(token -> builder.header("x-token-jwt", token.getRaw()))
+				.orElse(builder);
+
 	}
 }

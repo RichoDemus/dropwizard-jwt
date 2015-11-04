@@ -17,6 +17,9 @@ import org.junit.Test;
 
 import javax.ws.rs.BadRequestException;
 import javax.ws.rs.ForbiddenException;
+import javax.ws.rs.NotAuthorizedException;
+
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.fail;
@@ -164,42 +167,80 @@ public class IntegrationTest
 	@Test
 	public void shouldBeAbleToAccessTheAnyoneMethodWithoutLogginIn() throws Exception
 	{
-		final AccessControlledResource.Response result = controlledPage.anyone();
+		final AccessControlledResource.Response result = controlledPage.anyone(Optional.empty());
 		assertThat(result).isEqualTo(AccessControlledResource.Response.ALLOWED_FOR_EVERYONE);
 	}
 
 	@Test
-	public void shouldBeAbleToAccessTheAnyoneMethodWhenLoggedIn() throws Exception
+	public void shouldBeAbleToAccessTheAnyoneMethodWhenLoggedInAsUser() throws Exception
 	{
-		final AccessControlledResource.Response result = controlledPage.anyone(TokenUtil.VALID_USER_JWT_TOKEN);
+		final AccessControlledResource.Response result = controlledPage.anyone(Optional.of(TokenUtil.VALID_USER_JWT_TOKEN));
+		assertThat(result).isEqualTo(AccessControlledResource.Response.ALLOWED_FOR_EVERYONE);
+	}
+
+	@Test
+	public void shouldBeAbleToAccessTheAnyoneMethodWhenLoggedInAsAdmin() throws Exception
+	{
+		final AccessControlledResource.Response result = controlledPage.anyone(Optional.of(TokenUtil.VALID_ADMIN_JWT_TOKEN));
 		assertThat(result).isEqualTo(AccessControlledResource.Response.ALLOWED_FOR_EVERYONE);
 	}
 
 	@Test
 	public void shouldBeAbleToAccessTheLoggedInMethodWhenLoggedInAsUser() throws Exception
 	{
-		final AccessControlledResource.Response result = controlledPage.loggedIn(TokenUtil.VALID_USER_JWT_TOKEN);
+		final AccessControlledResource.Response result = controlledPage.loggedIn(Optional.of(TokenUtil.VALID_USER_JWT_TOKEN));
 		assertThat(result).isEqualTo(AccessControlledResource.Response.ALLOWED_FOR_LOGGED_IN_USERS);
+	}
+
+	@Test
+	public void shouldBeAbleToAccessTheLoggedInMethodWhenLoggedInAsAdmin() throws Exception
+	{
+		final AccessControlledResource.Response result = controlledPage.loggedIn(Optional.of(TokenUtil.VALID_ADMIN_JWT_TOKEN));
+		assertThat(result).isEqualTo(AccessControlledResource.Response.ALLOWED_FOR_LOGGED_IN_USERS);
+	}
+
+	@Test(expected = NotAuthorizedException.class)
+	public void shouldNotBeAbleToAccessTheLoggedInMethodWhenNotLoggedIn() throws Exception
+	{
+		controlledPage.loggedIn(Optional.empty());
 	}
 
 	@Test
 	public void shouldBeAbleToAccessTheUserAndAdminMethodWhenLoggedInAsUser() throws Exception
 	{
-		final AccessControlledResource.Response result = controlledPage.userAndAdmin(TokenUtil.VALID_USER_JWT_TOKEN);
+		final AccessControlledResource.Response result = controlledPage.userAndAdmin(Optional.of(TokenUtil.VALID_USER_JWT_TOKEN));
 		assertThat(result).isEqualTo(AccessControlledResource.Response.ALLOWED_FOR_ADMINS_AND_USERS);
 	}
 
 	@Test
 	public void shouldBeAbleToAccessTheUserAndAdminMethodWhenLoggedInAsAdmin() throws Exception
 	{
-		final AccessControlledResource.Response result = controlledPage.userAndAdmin(TokenUtil.VALID_ADMIN_JWT_TOKEN);
+		final AccessControlledResource.Response result = controlledPage.userAndAdmin(Optional.of(TokenUtil.VALID_ADMIN_JWT_TOKEN));
 		assertThat(result).isEqualTo(AccessControlledResource.Response.ALLOWED_FOR_ADMINS_AND_USERS);
+	}
+
+	@Test(expected = NotAuthorizedException.class)
+	public void shouldNotBeAbleToAccessTheUserAndAdminMethodWhenNotLoggedIn() throws Exception
+	{
+		controlledPage.userAndAdmin(Optional.empty());
 	}
 
 	@Test
 	public void shouldBeAbleToAccessTheAdminMethodWhenLoggedInAsAdmin() throws Exception
 	{
-		final AccessControlledResource.Response result = controlledPage.admins(TokenUtil.VALID_ADMIN_JWT_TOKEN);
+		final AccessControlledResource.Response result = controlledPage.admins(Optional.of(TokenUtil.VALID_ADMIN_JWT_TOKEN));
 		assertThat(result).isEqualTo(AccessControlledResource.Response.ADMINS_ONLY);
+	}
+
+	@Test(expected = NotAuthorizedException.class)
+	public void shouldNotBeAbleToAccessTheAdminMethodWhenNotLoggedIn() throws Exception
+	{
+		controlledPage.admins(Optional.empty());
+	}
+
+	@Test(expected = ForbiddenException.class)
+	public void shouldNotBeAbleToAccessTheAdminMethodWhenLoggedInAsUser() throws Exception
+	{
+		controlledPage.admins(Optional.of(TokenUtil.VALID_USER_JWT_TOKEN));
 	}
 }
