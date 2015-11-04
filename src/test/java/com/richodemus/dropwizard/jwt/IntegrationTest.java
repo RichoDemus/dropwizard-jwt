@@ -17,8 +17,6 @@ import org.junit.Test;
 
 import javax.ws.rs.BadRequestException;
 import javax.ws.rs.ForbiddenException;
-import javax.ws.rs.NotAuthorizedException;
-
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -199,7 +197,7 @@ public class IntegrationTest
 		assertThat(result).isEqualTo(AccessControlledResource.Response.ALLOWED_FOR_LOGGED_IN_USERS);
 	}
 
-	@Test(expected = NotAuthorizedException.class)
+	@Test(expected = ForbiddenException.class)
 	public void shouldNotBeAbleToAccessTheLoggedInMethodWhenNotLoggedIn() throws Exception
 	{
 		controlledPage.loggedIn(Optional.empty());
@@ -219,7 +217,7 @@ public class IntegrationTest
 		assertThat(result).isEqualTo(AccessControlledResource.Response.ALLOWED_FOR_ADMINS_AND_USERS);
 	}
 
-	@Test(expected = NotAuthorizedException.class)
+	@Test(expected = ForbiddenException.class)
 	public void shouldNotBeAbleToAccessTheUserAndAdminMethodWhenNotLoggedIn() throws Exception
 	{
 		controlledPage.userAndAdmin(Optional.empty());
@@ -232,7 +230,7 @@ public class IntegrationTest
 		assertThat(result).isEqualTo(AccessControlledResource.Response.ADMINS_ONLY);
 	}
 
-	@Test(expected = NotAuthorizedException.class)
+	@Test(expected = ForbiddenException.class)
 	public void shouldNotBeAbleToAccessTheAdminMethodWhenNotLoggedIn() throws Exception
 	{
 		controlledPage.admins(Optional.empty());

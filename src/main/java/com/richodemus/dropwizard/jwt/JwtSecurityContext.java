@@ -3,23 +3,29 @@ package com.richodemus.dropwizard.jwt;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.core.Context;
 import javax.ws.rs.core.SecurityContext;
 import java.security.Principal;
+import java.util.Optional;
 
 public class JwtSecurityContext implements SecurityContext
 {
 	private final Logger logger = LoggerFactory.getLogger(getClass());
+	private final Optional<String> maybeToken;
 
-	@Context
-	HttpServletRequest webRequest;
+	public JwtSecurityContext(Optional<String> maybeToken)
+	{
+		this.maybeToken = maybeToken;
+	}
 
 	@Override
 	public Principal getUserPrincipal()
 	{
 		logger.trace("getUserPrincipal called");
-		return null;
+		return maybeToken
+				.map(Token::new)
+				.map(Token::getUsername)
+				.map(username -> (Principal) () -> username)
+				.orElse(() -> "Unknown user");
 	}
 
 	@Override
@@ -27,7 +33,22 @@ public class JwtSecurityContext implements SecurityContext
 	{
 		logger.trace("isUserinRole {} called", role);
 
-		return true;
+		if (!maybeToken.isPresent())
+		{
+			logger.debug("No token, user not logged in");
+			return false;
+		}
+
+		if (role.equals("any"))
+		{
+			logger.debug("all logged in users are considered to be of role any");
+			return true;
+		}
+
+		return maybeToken.map(Token::new)
+				.map(Token::getRole)
+				.filter(role::equals)
+				.isPresent();
 	}
 
 	@Override

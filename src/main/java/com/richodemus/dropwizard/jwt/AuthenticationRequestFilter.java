@@ -10,6 +10,7 @@ import javax.ws.rs.container.ContainerRequestFilter;
 import javax.ws.rs.container.PreMatching;
 import javax.ws.rs.ext.Provider;
 import java.io.IOException;
+import java.util.Optional;
 
 @Provider
 @Priority(Priorities.AUTHENTICATION)
@@ -22,6 +23,6 @@ public class AuthenticationRequestFilter implements ContainerRequestFilter
 	public void filter(ContainerRequestContext requestContext) throws IOException
 	{
 		logger.info("Filter called");
-		requestContext.setSecurityContext(new JwtSecurityContext());
+		requestContext.setSecurityContext(new JwtSecurityContext(Optional.ofNullable(requestContext.getHeaderString("x-token-jwt"))));
 	}
 }
