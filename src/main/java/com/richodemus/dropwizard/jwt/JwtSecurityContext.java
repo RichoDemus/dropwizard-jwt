@@ -10,10 +10,12 @@ import java.util.Optional;
 public class JwtSecurityContext implements SecurityContext
 {
 	private final Logger logger = LoggerFactory.getLogger(getClass());
+	private final AuthenticationManager authenticationManager;
 	private final Optional<String> maybeToken;
 
-	public JwtSecurityContext(Optional<String> maybeToken)
+	public JwtSecurityContext(AuthenticationManager authenticationManager, Optional<String> maybeToken)
 	{
+		this.authenticationManager = authenticationManager;
 		this.maybeToken = maybeToken;
 	}
 
@@ -36,6 +38,13 @@ public class JwtSecurityContext implements SecurityContext
 		if (!maybeToken.isPresent())
 		{
 			logger.debug("No token, user not logged in");
+			return false;
+		}
+
+		//Todo it feels like this shouldn't be here...
+		if(authenticationManager.isBlackListed(new Token(maybeToken.get())))
+		{
+			logger.warn("Token {} is blacklisted", maybeToken.get());
 			return false;
 		}
 

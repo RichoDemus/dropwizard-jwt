@@ -14,11 +14,16 @@ public class TestApp extends Application<TestConfiguration>
 	@Override
 	public void run(TestConfiguration configuration, Environment environment) throws Exception
 	{
+		//todo this is getting messy, need a cleaner way of doing this
 		final UserServiceImpl userService = new UserServiceImpl();
+
+		//These three lines are the actual library setup
 		final AuthenticationManager authenticationManager = new AuthenticationManager(userService);
+		environment.jersey().register(new AuthenticationRequestFilter(authenticationManager));
+		environment.jersey().register(RolesAllowedDynamicFeature.class);
+
+		//This is not really library related
 		environment.jersey().register(new UserResource(authenticationManager, userService));
 		environment.jersey().register(AccessControlledResource.class);
-		environment.jersey().register(AuthenticationRequestFilter.class);
-		environment.jersey().register(RolesAllowedDynamicFeature.class);
 	}
 }

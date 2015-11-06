@@ -18,11 +18,20 @@ import java.util.Optional;
 public class AuthenticationRequestFilter implements ContainerRequestFilter
 {
 	private final Logger logger = LoggerFactory.getLogger(getClass());
+	private final AuthenticationManager authenticationManager;
+
+	public AuthenticationRequestFilter(AuthenticationManager authenticationManager)
+	{
+		this.authenticationManager = authenticationManager;
+	}
 
 	@Override
 	public void filter(ContainerRequestContext requestContext) throws IOException
 	{
 		logger.info("Filter called");
-		requestContext.setSecurityContext(new JwtSecurityContext(Optional.ofNullable(requestContext.getHeaderString("x-token-jwt"))));
+		requestContext.setSecurityContext(new JwtSecurityContext(
+				authenticationManager,
+				Optional.ofNullable(requestContext.getHeaderString("x-token-jwt")))
+		);
 	}
 }

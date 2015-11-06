@@ -86,4 +86,9 @@ public class AuthenticationManager
 	{
 		blacklist.blacklist(token);
 	}
+
+	public boolean isBlackListed(Token token)
+	{
+		return blacklist.isBlacklisted(token);
+	}
 }

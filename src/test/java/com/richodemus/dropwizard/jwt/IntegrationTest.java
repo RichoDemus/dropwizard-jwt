@@ -203,6 +203,15 @@ public class IntegrationTest
 		controlledPage.loggedIn(Optional.empty());
 	}
 
+	@Test(expected = ForbiddenException.class)
+	public void shouldNotBeAbleToAccessTheLoggedInMethodWithABlackListedToken() throws Exception
+	{
+		final Token token = loginPage.login(EXISTING_USER, EXISTING_USER_PASSWORD);
+		loginPage.logout(token);
+
+		controlledPage.loggedIn(Optional.of(token));
+	}
+
 	@Test
 	public void shouldBeAbleToAccessTheUserAndAdminMethodWhenLoggedInAsUser() throws Exception
 	{
