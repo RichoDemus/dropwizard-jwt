@@ -42,7 +42,28 @@
 			<artifactId>java-jwt</artifactId>
 			<version>2.1.0</version>
 		</dependency>
+		<dependency>
+			<groupId>org.glassfish.jersey.core</groupId>
+			<artifactId>jersey-server</artifactId>
+			<version>2.19</version>
+			<exclusions>
+				<exclusion>
+					<groupId>org.glassfish.hk2.external</groupId>
+					<artifactId>javax.inject</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+		<dependency>
+			<groupId>com.fasterxml.jackson.core</groupId>
+			<artifactId>jackson-annotations</artifactId>
+			<version>2.6.3</version>
+		</dependency>
 
+		<dependency>
+			<groupId>io.dropwizard</groupId>
+			<artifactId>dropwizard-jersey</artifactId>
+			<version>0.9.0</version>
+		</dependency>
 		<dependency>
 			<groupId>io.dropwizard</groupId>
 			<artifactId>dropwizard-core</artifactId>
