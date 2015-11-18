@@ -58,11 +58,22 @@
 			<artifactId>jackson-annotations</artifactId>
 			<version>2.6.3</version>
 		</dependency>
+		<dependency>
+			<groupId>javax.inject</groupId>
+			<artifactId>javax.inject</artifactId>
+			<version>1</version>
+		</dependency>
 
 		<dependency>
 			<groupId>io.dropwizard</groupId>
 			<artifactId>dropwizard-jersey</artifactId>
 			<version>0.9.0</version>
+			<exclusions>
+				<exclusion>
+					<groupId>org.glassfish.hk2.external</groupId>
+					<artifactId>javax.inject</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>io.dropwizard</groupId>

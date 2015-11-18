@@ -23,6 +23,7 @@ public class JwtSecurityContext implements SecurityContext
 	public Principal getUserPrincipal()
 	{
 		logger.trace("getUserPrincipal called");
+		//todo validate token right away
 		return maybeToken
 				.map(Token::new)
 				.map(Token::getUsername)

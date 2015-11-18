@@ -6,6 +6,7 @@ import com.richodemus.dropwizard.jwt.model.Role;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.inject.Inject;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -16,6 +17,7 @@ public class AuthenticationManager
 	private final UserService userService;
 	private final TokenBlacklist blacklist;
 
+	@Inject
 	public AuthenticationManager(UserService userService)
 	{
 		this.userService = userService;
