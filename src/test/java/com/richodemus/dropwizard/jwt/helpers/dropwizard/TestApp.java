@@ -9,6 +9,9 @@ import io.dropwizard.Application;
 import io.dropwizard.setup.Environment;
 import org.glassfish.jersey.server.filter.RolesAllowedDynamicFeature;
 
+import java.time.Duration;
+import java.time.temporal.ChronoUnit;
+
 public class TestApp extends Application<TestConfiguration>
 {
 	@Override
@@ -18,7 +21,7 @@ public class TestApp extends Application<TestConfiguration>
 		final UserServiceImpl userService = new UserServiceImpl();
 
 		//These three lines are the actual library setup
-		final AuthenticationManager authenticationManager = new AuthenticationManager(userService);
+		final AuthenticationManager authenticationManager = new AuthenticationManager(userService, Duration.of(1, ChronoUnit.HOURS));
 		environment.jersey().register(new AuthenticationRequestFilter(authenticationManager));
 		environment.jersey().register(RolesAllowedDynamicFeature.class);
 

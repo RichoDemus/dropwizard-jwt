@@ -7,6 +7,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
+import javax.inject.Named;
+import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -16,12 +18,14 @@ public class AuthenticationManager
 	private final Logger logger = LoggerFactory.getLogger(getClass());
 	private final UserService userService;
 	private final TokenBlacklist blacklist;
+	private final Duration tokenDuration;
 
 	@Inject
-	public AuthenticationManager(UserService userService)
+	public AuthenticationManager(final UserService userService, final @Named("tokenDuration") Duration tokenDuration)
 	{
 		this.userService = userService;
-		blacklist = new TokenBlacklist();
+		this.tokenDuration = tokenDuration;
+		this.blacklist = new TokenBlacklist();
 	}
 
 	public Optional<Token> login(String username, String password)
@@ -42,7 +46,7 @@ public class AuthenticationManager
 
 			//todo set all the other fields such as issuer
 			final JWTSigner.Options options = new JWTSigner.Options();
-			options.setExpirySeconds(60 * 10);
+			options.setExpirySeconds((int)tokenDuration.getSeconds());
 			return Optional.of(new Token(signer.sign(claims, options)));
 		}
 		catch (Exception e)
