@@ -61,10 +61,10 @@ public class IntegrationTest
 		final CreateUserResponse result = loginPage.createUser(expectedRole, NON_EXISTING_USER, NON_EXISTING_USER_PASSWORD);
 		assertThat(result.getResult()).isEqualTo(CreateUserResponse.Result.OK);
 
-		final Token result2 = loginPage.login(NON_EXISTING_USER, NON_EXISTING_USER_PASSWORD);
-		assertThat(result2.getUsername()).isEqualTo(NON_EXISTING_USER);
-		assertThat(result2.getRole()).isEqualTo(expectedRole);
-
+		final RawToken result2 = loginPage.login(NON_EXISTING_USER, NON_EXISTING_USER_PASSWORD);
+		final Token parsedResult = new TokenParser(Secret.SECRET, result2).parse();
+		assertThat(parsedResult.getUsername()).isEqualTo(NON_EXISTING_USER);
+		assertThat(parsedResult.getRole()).isEqualTo(expectedRole);
 	}
 
 	@Test(expected = ForbiddenException.class)
@@ -76,14 +76,14 @@ public class IntegrationTest
 	@Test(expected = BadRequestException.class)
 	public void shouldThrowBadRequestExceptionWhenRefreshingUsingAnInvalidToken() throws Exception
 	{
-		loginPage.refreshToken(new Token("invalidino tokenirino cappuchino"));
+		loginPage.refreshToken(new RawToken("invalidino tokenirino cappuchino"));
 
 	}
 
 	@Test
 	public void shouldReturnValidTokenOnLogin() throws Exception
 	{
-		final Token firstToken = loginPage.login(EXISTING_USER, EXISTING_USER_PASSWORD);
+		final RawToken firstToken = loginPage.login(EXISTING_USER, EXISTING_USER_PASSWORD);
 
 		//if refresh doesn't throw an exception, the first token was valid
 		loginPage.refreshToken(firstToken);
@@ -92,20 +92,20 @@ public class IntegrationTest
 	@Test
 	public void shouldReturnNewTokenWhenRefreshing() throws Exception
 	{
-		final Token firstToken = loginPage.login(EXISTING_USER, EXISTING_USER_PASSWORD);
+		final RawToken firstToken = loginPage.login(EXISTING_USER, EXISTING_USER_PASSWORD);
 
 		//There is no random element to tokens, so we need a new expiration or the new one will be identical
 		Thread.sleep(1100L);
 
-		final Token newToken = loginPage.refreshToken(firstToken);
+		final RawToken newToken = loginPage.refreshToken(firstToken);
 
-		assertThat(firstToken.getRaw()).isNotEqualTo(newToken.getRaw());
+		assertThat(firstToken.stringValue()).isNotEqualTo(newToken.stringValue());
 	}
 
 	@Test
 	public void shouldBlackListOldTokenWhenReturningANewWhenRefreshing() throws Exception
 	{
-		final Token firstToken = loginPage.login(EXISTING_USER, EXISTING_USER_PASSWORD);
+		final RawToken firstToken = loginPage.login(EXISTING_USER, EXISTING_USER_PASSWORD);
 
 		//There is no random element to tokens, so we need a new expiration or the new one will be identical
 		Thread.sleep(1100L);
@@ -130,8 +130,8 @@ public class IntegrationTest
 	@Test(timeout = 10000)
 	public void shouldNotBlacklistOldTokenWhenReturningSameTokenWhenRefreshing() throws Exception
 	{
-		Token firstToken;
-		Token sameToken;
+		RawToken firstToken;
+		RawToken sameToken;
 		do
 		{
 			firstToken = loginPage.login(EXISTING_USER, EXISTING_USER_PASSWORD);
@@ -141,15 +141,15 @@ public class IntegrationTest
 
 		Thread.sleep(1100L);
 
-		final Token newToken = loginPage.refreshToken(firstToken);
+		final RawToken newToken = loginPage.refreshToken(firstToken);
 
-		assertThat(firstToken.getRaw()).isNotEqualTo(newToken.getRaw());
+		assertThat(firstToken.stringValue()).isNotEqualTo(newToken.stringValue());
 	}
 
 	@Test
 	public void shouldBlacklistTokenWhenLoggingOut() throws Exception
 	{
-		final Token token = loginPage.login(EXISTING_USER, EXISTING_USER_PASSWORD);
+		final RawToken token = loginPage.login(EXISTING_USER, EXISTING_USER_PASSWORD);
 		final LogoutResponse response = loginPage.logout(token);
 		assertThat(response.getResult()).isEqualTo(LogoutResponse.Result.OK);
 		try
@@ -206,7 +206,7 @@ public class IntegrationTest
 	@Test(expected = ForbiddenException.class)
 	public void shouldNotBeAbleToAccessTheLoggedInMethodWithABlackListedToken() throws Exception
 	{
-		final Token token = loginPage.login(EXISTING_USER, EXISTING_USER_PASSWORD);
+		final RawToken token = loginPage.login(EXISTING_USER, EXISTING_USER_PASSWORD);
 		loginPage.logout(token);
 
 		controlledPage.loggedIn(Optional.of(token));

@@ -11,11 +11,14 @@ public class JwtSecurityContext implements SecurityContext
 {
 	private final Logger logger = LoggerFactory.getLogger(getClass());
 	private final AuthenticationManager authenticationManager;
-	private final Optional<String> maybeToken;
+	private final Optional<RawToken> maybeRawToken;
+	private final Optional<Token> maybeToken;
 
-	public JwtSecurityContext(AuthenticationManager authenticationManager, Optional<String> maybeToken)
+	//Fix this.....
+	public JwtSecurityContext(AuthenticationManager authenticationManager, Optional<RawToken> maybeRawToken, Optional<Token> maybeToken)
 	{
 		this.authenticationManager = authenticationManager;
+		this.maybeRawToken = maybeRawToken;
 		this.maybeToken = maybeToken;
 	}
 
@@ -25,7 +28,6 @@ public class JwtSecurityContext implements SecurityContext
 		logger.trace("getUserPrincipal called");
 		//todo validate token right away
 		return maybeToken
-				.map(Token::new)
 				.map(Token::getUsername)
 				.map(username -> (Principal) () -> username)
 				.orElse(() -> "Unknown user");
@@ -43,7 +45,7 @@ public class JwtSecurityContext implements SecurityContext
 		}
 
 		//Todo it feels like this shouldn't be here...
-		if(authenticationManager.isBlackListed(new Token(maybeToken.get())))
+		if (authenticationManager.isBlackListed(maybeRawToken.get()))
 		{
 			logger.warn("Token {} is blacklisted", maybeToken.get());
 			return false;
@@ -55,8 +57,7 @@ public class JwtSecurityContext implements SecurityContext
 			return true;
 		}
 
-		return maybeToken.map(Token::new)
-				.map(Token::getRole)
+		return maybeToken.map(Token::getRole)
 				.filter(role::equals)
 				.isPresent();
 	}

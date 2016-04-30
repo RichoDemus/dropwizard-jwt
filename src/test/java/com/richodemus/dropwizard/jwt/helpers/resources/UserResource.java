@@ -1,7 +1,7 @@
 package com.richodemus.dropwizard.jwt.helpers.resources;
 
 import com.richodemus.dropwizard.jwt.AuthenticationManager;
-import com.richodemus.dropwizard.jwt.Token;
+import com.richodemus.dropwizard.jwt.RawToken;
 import com.richodemus.dropwizard.jwt.helpers.UserServiceImpl;
 import com.richodemus.dropwizard.jwt.helpers.model.CreateUserRequest;
 import com.richodemus.dropwizard.jwt.helpers.model.CreateUserResponse;
@@ -36,7 +36,7 @@ public class UserResource
 
 	@POST
 	@Path("/login")
-	public Token login(LoginRequest loginRequest)
+	public RawToken login(LoginRequest loginRequest)
 	{
 		return authenticationManager.login(loginRequest.getUsername(), loginRequest.getPassword())
 				.orElseThrow(ForbiddenException::new);
@@ -52,11 +52,11 @@ public class UserResource
 
 	@POST
 	@Path("refresh-token")
-	public Token refreshToken(@Context HttpServletRequest request)
+	public RawToken refreshToken(@Context HttpServletRequest request)
 	{
 		//todo there is a standard for how to add the token to the header, use it
-		final String rawToken = request.getHeader("x-token-jwt");
-		return authenticationManager.refreshToken(new Token(rawToken))
+		final RawToken rawToken = new RawToken(request.getHeader("x-token-jwt"));
+		return authenticationManager.refreshToken(rawToken)
 				.orElseThrow(BadRequestException::new);
 	}
 
@@ -64,8 +64,8 @@ public class UserResource
 	@Path("logout")
 	public LogoutResponse logout(@Context HttpServletRequest request)
 	{
-		final Token token = Optional.ofNullable(request.getHeader("x-token-jwt"))
-				.map(Token::new)
+		final RawToken token = Optional.ofNullable(request.getHeader("x-token-jwt"))
+				.map(RawToken::new)
 				.orElseThrow(ForbiddenException::new);
 
 		authenticationManager.logout(token);

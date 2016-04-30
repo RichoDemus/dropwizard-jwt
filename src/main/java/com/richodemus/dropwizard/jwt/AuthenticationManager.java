@@ -19,26 +19,28 @@ public class AuthenticationManager
 	private final UserService userService;
 	private final TokenBlacklist blacklist;
 	private final Duration tokenDuration;
+	private final String secret;
 
 	@Inject
-	public AuthenticationManager(final UserService userService, final @Named("tokenDuration") Duration tokenDuration)
+	public AuthenticationManager(final UserService userService, final @Named("tokenDuration") Duration tokenDuration, final @Named("secret") String secret)
 	{
 		this.userService = userService;
 		this.tokenDuration = tokenDuration;
+		this.secret = secret;
 		this.blacklist = new TokenBlacklist();
 	}
 
-	public Optional<Token> login(String username, String password)
+	public Optional<RawToken> login(String username, String password)
 	{
 		return userService.login(username, password)
 				.flatMap(role -> generateToken(username, role));
 	}
 
-	private Optional<Token> generateToken(String username, Role role)
+	private Optional<RawToken> generateToken(String username, Role role)
 	{
 		try
 		{
-			final JWTSigner signer = new JWTSigner(SecretKeeper.SECRET);
+			final JWTSigner signer = new JWTSigner(secret);
 
 			Map<String, Object> claims = new HashMap<>();
 			claims.put("user", username);
@@ -47,7 +49,7 @@ public class AuthenticationManager
 			//todo set all the other fields such as issuer
 			final JWTSigner.Options options = new JWTSigner.Options();
 			options.setExpirySeconds((int)tokenDuration.getSeconds());
-			return Optional.of(new Token(signer.sign(claims, options)));
+			return Optional.of(new RawToken(signer.sign(claims, options)));
 		}
 		catch (Exception e)
 		{
@@ -56,17 +58,23 @@ public class AuthenticationManager
 		}
 	}
 
-	public Optional<Token> refreshToken(Token token)
+	public Token parseToken(final RawToken raw)
 	{
-		if (blacklist.isBlacklisted(token))
+		return new TokenParser(secret, raw).parse();
+	}
+
+	public Optional<RawToken> refreshToken(RawToken rawToken)
+	{
+		final Token token = parseToken(rawToken);
+		if (blacklist.isBlacklisted(rawToken))
 		{
-			logger.debug("Token {} is blacklisted", token);
+			logger.debug("Token {} is blacklisted", rawToken);
 			//todo maybe have a more explicit "TokenBlacklistedException"?
 			return Optional.empty();
 		}
 		try
 		{
-			final Map<String, Object> claims = new JWTVerifier(SecretKeeper.SECRET).verify(token.getRaw());
+			final Map<String, Object> claims = new JWTVerifier(secret).verify(rawToken.stringValue());
 		}
 		catch (Exception e)
 		{
@@ -75,12 +83,12 @@ public class AuthenticationManager
 		}
 		//todo think more about this, is this enough validation?
 
-		final Optional<Token> maybeNewToken = generateToken(token.getUsername(), new Role(token.getRole()));
-		maybeNewToken.ifPresent(newToken -> blackListIfNotEqual(token, newToken));
+		final Optional<RawToken> maybeNewToken = generateToken(token.getUsername(), new Role(token.getRole()));
+		maybeNewToken.ifPresent(newToken -> blackListIfNotEqual(rawToken, newToken));
 		return maybeNewToken;
 	}
 
-	private void blackListIfNotEqual(Token token, Token newToken)
+	private void blackListIfNotEqual(RawToken token, RawToken newToken)
 	{
 		if (!token.equals(newToken))
 		{
@@ -88,12 +96,12 @@ public class AuthenticationManager
 		}
 	}
 
-	public void logout(Token token)
+	public void logout(RawToken token)
 	{
 		blacklist.blacklist(token);
 	}
 
-	public boolean isBlackListed(Token token)
+	public boolean isBlackListed(RawToken token)
 	{
 		return blacklist.isBlacklisted(token);
 	}

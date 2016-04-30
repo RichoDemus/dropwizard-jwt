@@ -1,75 +1,34 @@
 package com.richodemus.dropwizard.jwt;
 
-import com.auth0.jwt.JWTVerifier;
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
+import com.auth0.jwt.internal.com.fasterxml.jackson.annotation.JsonIgnore;
+import com.google.common.base.MoreObjects;
 
-import java.util.Map;
 import java.util.Objects;
 
 public class Token
 {
-	private final String raw;
+	private final String username;
+	private final String role;
+	private final String expiration;
 
-	@JsonCreator
-	public Token(@JsonProperty("raw") String raw)
-	{
-		this.raw = raw;
-	}
 
-	public String getRaw()
+	public Token(String username, String role, String expiration)
 	{
-		return raw;
+		this.username = username;
+		this.role = role;
+		this.expiration = expiration;
 	}
 
 	@JsonIgnore
 	public String getUsername()
 	{
-		return getString("user");
+		return username;
 	}
 
 	@JsonIgnore
 	public String getRole()
 	{
-		return getString("role");
-	}
-
-	@JsonIgnore
-	public String getExpiration()
-	{
-		return String.valueOf(getInt("exp"));
-	}
-
-	//todo rewrite this and getInt
-	private String getString(String user)
-	{
-		try
-		{
-			final Map<String, Object> verify = new JWTVerifier(SecretKeeper.SECRET).verify(raw);
-
-			final Object asd = verify.get(user);
-			return (String) asd;
-		}
-		catch (Exception e)
-		{
-			throw new IllegalStateException(e);
-		}
-	}
-
-	private int getInt(String user)
-	{
-		try
-		{
-			final Map<String, Object> verify = new JWTVerifier(SecretKeeper.SECRET).verify(raw);
-
-			final Object asd = verify.get(user);
-			return (Integer) asd;
-		}
-		catch (Exception e)
-		{
-			throw new IllegalStateException(e);
-		}
+		return role;
 	}
 
 	@Override
@@ -83,19 +42,25 @@ public class Token
 		{
 			return false;
 		}
-		final Token token = (Token) o;
-		return Objects.equals(raw, token.raw);
+		Token token = (Token) o;
+		return Objects.equals(username, token.username) &&
+				Objects.equals(role, token.role) &&
+				Objects.equals(expiration, token.expiration);
 	}
 
 	@Override
 	public int hashCode()
 	{
-		return Objects.hash(raw);
+		return Objects.hash(username, role, expiration);
 	}
 
 	@Override
 	public String toString()
 	{
-		return getUsername() + ", " + getRole() + ", " + getExpiration();
+		return MoreObjects.toStringHelper(this)
+				.add("username", username)
+				.add("role", role)
+				.add("expiration", expiration)
+				.toString();
 	}
 }

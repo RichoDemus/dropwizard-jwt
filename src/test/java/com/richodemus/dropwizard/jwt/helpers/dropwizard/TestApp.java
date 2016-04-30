@@ -2,6 +2,7 @@ package com.richodemus.dropwizard.jwt.helpers.dropwizard;
 
 import com.richodemus.dropwizard.jwt.AuthenticationManager;
 import com.richodemus.dropwizard.jwt.AuthenticationRequestFilter;
+import com.richodemus.dropwizard.jwt.Secret;
 import com.richodemus.dropwizard.jwt.helpers.UserServiceImpl;
 import com.richodemus.dropwizard.jwt.helpers.resources.AccessControlledResource;
 import com.richodemus.dropwizard.jwt.helpers.resources.UserResource;
@@ -21,7 +22,7 @@ public class TestApp extends Application<TestConfiguration>
 		final UserServiceImpl userService = new UserServiceImpl();
 
 		//These three lines are the actual library setup
-		final AuthenticationManager authenticationManager = new AuthenticationManager(userService, Duration.of(1, ChronoUnit.HOURS));
+		final AuthenticationManager authenticationManager = new AuthenticationManager(userService, Duration.of(1, ChronoUnit.HOURS), Secret.SECRET);
 		environment.jersey().register(new AuthenticationRequestFilter(authenticationManager));
 		environment.jersey().register(RolesAllowedDynamicFeature.class);
 

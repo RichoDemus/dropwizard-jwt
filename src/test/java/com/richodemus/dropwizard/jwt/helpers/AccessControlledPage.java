@@ -1,6 +1,6 @@
 package com.richodemus.dropwizard.jwt.helpers;
 
-import com.richodemus.dropwizard.jwt.Token;
+import com.richodemus.dropwizard.jwt.RawToken;
 import com.richodemus.dropwizard.jwt.helpers.resources.AccessControlledResource;
 
 import javax.ws.rs.client.ClientBuilder;
@@ -16,34 +16,35 @@ public class AccessControlledPage
 		this.port = port;
 	}
 
-	public AccessControlledResource.Response anyone(Optional<Token> token)
+	public AccessControlledResource.Response anyone(Optional<RawToken> token)
 	{
 		return getClient("api/controlled/anyone", token).get(AccessControlledResource.Response.class);
 	}
 
-	public AccessControlledResource.Response loggedIn(Optional<Token> token)
+	public AccessControlledResource.Response loggedIn(Optional<RawToken> token)
 	{
 		return getClient("api/controlled/logged-in", token).get(AccessControlledResource.Response.class);
 	}
 
-	public AccessControlledResource.Response userAndAdmin(Optional<Token> token)
+	public AccessControlledResource.Response userAndAdmin(Optional<RawToken> token)
 	{
 		return getClient("api/controlled/admin-and-user", token).get(AccessControlledResource.Response.class);
 	}
 
-	public AccessControlledResource.Response admins(Optional<Token> token)
+	public AccessControlledResource.Response admins(Optional<RawToken> token)
 	{
 		return getClient("api/controlled/admins", token).get(AccessControlledResource.Response.class);
 	}
 
-	private Invocation.Builder getClient(String path, Optional<Token> maybeToken)
+	private Invocation.Builder getClient(String path, Optional<RawToken> maybeToken)
 	{
 		final Invocation.Builder builder = ClientBuilder.newClient()
 				.target("http://localhost:" + port)
 				.path(path)
 				.request();
 
-		return maybeToken.map(token -> builder.header("x-token-jwt", token.getRaw()))
+		return maybeToken.map(RawToken::stringValue)
+				.map(token -> builder.header("x-token-jwt", token))
 				.orElse(builder);
 
 	}

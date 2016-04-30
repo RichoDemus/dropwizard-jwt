@@ -1,6 +1,6 @@
 package com.richodemus.dropwizard.jwt.helpers;
 
-import com.richodemus.dropwizard.jwt.Token;
+import com.richodemus.dropwizard.jwt.RawToken;
 import com.richodemus.dropwizard.jwt.helpers.model.CreateUserRequest;
 import com.richodemus.dropwizard.jwt.helpers.model.CreateUserResponse;
 import com.richodemus.dropwizard.jwt.helpers.model.LoginRequest;
@@ -27,32 +27,32 @@ public class LoginPage
 				.post(Entity.json(new CreateUserRequest(nonExistingUser, nonExistingUserPassword, expectedRole)), CreateUserResponse.class);
 	}
 
-	public Token login(String existingUser, String existingUserPassword)
+	public RawToken login(String existingUser, String existingUserPassword)
 	{
 		return ClientBuilder.newClient()
 				.target("http://localhost:" + port)
 				.path("api/users/login")
 				.request()
-				.post(Entity.json(new LoginRequest(existingUser, existingUserPassword)), Token.class);
+				.post(Entity.json(new LoginRequest(existingUser, existingUserPassword)), RawToken.class);
 	}
 
-	public Token refreshToken(Token token)
+	public RawToken refreshToken(RawToken token)
 	{
 		return ClientBuilder.newClient()
 				.target("http://localhost:" + port)
 				.path("api/users/refresh-token")
 				.request()
-				.header("x-token-jwt", token.getRaw())
-				.post(Entity.json(null), Token.class);
+				.header("x-token-jwt", token.stringValue())
+				.post(Entity.json(null), RawToken.class);
 	}
 
-	public LogoutResponse logout(Token token)
+	public LogoutResponse logout(RawToken token)
 	{
 		return ClientBuilder.newClient()
 				.target("http://localhost:" + port)
 				.path("api/users/logout")
 				.request()
-				.header("x-token-jwt", token.getRaw())
+				.header("x-token-jwt", token.stringValue())
 				.post(Entity.json(null), LogoutResponse.class);
 	}
 }

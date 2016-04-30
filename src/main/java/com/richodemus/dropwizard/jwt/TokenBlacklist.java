@@ -6,19 +6,19 @@ import java.util.Set;
 //todo regularly check for and remove expired tokens
 public class TokenBlacklist
 {
-	private final Set<Token> blacklist;
+	private final Set<RawToken> blacklist;
 
 	public TokenBlacklist()
 	{
 		blacklist = new HashSet<>();
 	}
 
-	public boolean isBlacklisted(Token token)
+	public boolean isBlacklisted(RawToken token)
 	{
 		return blacklist.contains(token);
 	}
 
-	public void blacklist(Token token)
+	public void blacklist(RawToken token)
 	{
 		blacklist.add(token);
 	}

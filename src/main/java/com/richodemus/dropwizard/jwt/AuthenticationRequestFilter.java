@@ -5,6 +5,7 @@ import org.slf4j.LoggerFactory;
 
 import javax.annotation.Priority;
 import javax.inject.Inject;
+import javax.ws.rs.BadRequestException;
 import javax.ws.rs.Priorities;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerRequestFilter;
@@ -31,9 +32,22 @@ public class AuthenticationRequestFilter implements ContainerRequestFilter
 	public void filter(ContainerRequestContext requestContext) throws IOException
 	{
 		logger.info("Filter called");
-		requestContext.setSecurityContext(new JwtSecurityContext(
-				authenticationManager,
-				Optional.ofNullable(requestContext.getHeaderString("x-token-jwt")))
-		);
+		try
+		{
+			final Optional<RawToken> rawToken = Optional.of("x-token-jwt")
+					.map(requestContext::getHeaderString)
+					.map(RawToken::new);
+			final Optional<Token> token = rawToken
+					.map(authenticationManager::parseToken);
+
+			requestContext.setSecurityContext(new JwtSecurityContext(
+					authenticationManager,
+					rawToken,
+					token));
+		}
+		catch (Exception e)
+		{
+			throw new BadRequestException(e);
+		}
 	}
 }
