@@ -21,7 +21,9 @@ public class AuthenticationManager
 	private final String secret;
 
 	@Inject
-	public AuthenticationManager(final UserService userService, final @Named("tokenDuration") Duration tokenDuration, final @Named("secret") String secret)
+	public AuthenticationManager(final UserService userService,
+								 final @Named("tokenDuration") Duration tokenDuration,
+								 final @Named("secret") String secret)
 	{
 		this.userService = userService;
 		this.tokenDuration = tokenDuration;
@@ -32,6 +34,28 @@ public class AuthenticationManager
 	{
 		return userService.login(username, password)
 				.flatMap(role -> generateToken(username, role));
+	}
+
+	public Token parseToken(final RawToken raw)
+	{
+		return new TokenParser(secret, raw).parse();
+	}
+
+	public Optional<RawToken> refreshToken(RawToken rawToken)
+	{
+		final Token token = parseToken(rawToken);
+		try
+		{
+			final Map<String, Object> claims = new JWTVerifier(secret).verify(rawToken.stringValue());
+		}
+		catch (Exception e)
+		{
+			logger.error("Exception when validating token", e);
+			return Optional.empty();
+		}
+		//todo think more about this, is this enough validation?
+
+		return generateToken(token.getUsername(), new Role(token.getRole()));
 	}
 
 	private Optional<RawToken> generateToken(String username, Role role)
@@ -54,28 +78,5 @@ public class AuthenticationManager
 			logger.error("Unable to create token for user {}", username, e);
 			return Optional.empty();
 		}
-	}
-
-	public Token parseToken(final RawToken raw)
-	{
-		return new TokenParser(secret, raw).parse();
-	}
-
-	public Optional<RawToken> refreshToken(RawToken rawToken)
-	{
-		final Token token = parseToken(rawToken);
-		try
-		{
-			final Map<String, Object> claims = new JWTVerifier(secret).verify(rawToken.stringValue());
-		}
-		catch (Exception e)
-		{
-			logger.error("Exception when validating token", e);
-			return Optional.empty();
-		}
-		//todo think more about this, is this enough validation?
-
-		final Optional<RawToken> maybeNewToken = generateToken(token.getUsername(), new Role(token.getRole()));
-		return maybeNewToken;
 	}
 }

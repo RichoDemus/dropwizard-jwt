@@ -2,7 +2,7 @@ package com.richodemus.dropwizard.jwt.model;
 
 public class Role
 {
-	final String role;
+	private final String role;
 
 	public Role(String role)
 	{
