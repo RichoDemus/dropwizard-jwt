@@ -4,7 +4,6 @@ import com.richodemus.dropwizard.jwt.RawToken;
 import com.richodemus.dropwizard.jwt.helpers.model.CreateUserRequest;
 import com.richodemus.dropwizard.jwt.helpers.model.CreateUserResponse;
 import com.richodemus.dropwizard.jwt.helpers.model.LoginRequest;
-import com.richodemus.dropwizard.jwt.helpers.model.LogoutResponse;
 
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.Entity;
@@ -44,15 +43,5 @@ public class LoginPage
 				.request()
 				.header("x-token-jwt", token.stringValue())
 				.post(Entity.json(null), RawToken.class);
-	}
-
-	public LogoutResponse logout(RawToken token)
-	{
-		return ClientBuilder.newClient()
-				.target("http://localhost:" + port)
-				.path("api/users/logout")
-				.request()
-				.header("x-token-jwt", token.stringValue())
-				.post(Entity.json(null), LogoutResponse.class);
 	}
 }

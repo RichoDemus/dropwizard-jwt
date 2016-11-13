@@ -11,7 +11,6 @@ public class Token
 	private final String role;
 	private final String expiration;
 
-
 	public Token(String username, String role, String expiration)
 	{
 		this.username = username;

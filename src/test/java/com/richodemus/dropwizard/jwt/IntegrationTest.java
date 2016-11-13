@@ -6,7 +6,6 @@ import com.richodemus.dropwizard.jwt.helpers.TokenUtil;
 import com.richodemus.dropwizard.jwt.helpers.dropwizard.TestApp;
 import com.richodemus.dropwizard.jwt.helpers.dropwizard.TestConfiguration;
 import com.richodemus.dropwizard.jwt.helpers.model.CreateUserResponse;
-import com.richodemus.dropwizard.jwt.helpers.model.LogoutResponse;
 import com.richodemus.dropwizard.jwt.helpers.resources.AccessControlledResource;
 import com.richodemus.dropwizard.jwt.model.Role;
 import io.dropwizard.testing.DropwizardTestSupport;
@@ -20,7 +19,6 @@ import javax.ws.rs.ForbiddenException;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.fail;
 
 public class IntegrationTest
 {
@@ -103,66 +101,6 @@ public class IntegrationTest
 	}
 
 	@Test
-	public void shouldBlackListOldTokenWhenReturningANewWhenRefreshing() throws Exception
-	{
-		final RawToken firstToken = loginPage.login(EXISTING_USER, EXISTING_USER_PASSWORD);
-
-		//There is no random element to tokens, so we need a new expiration or the new one will be identical
-		Thread.sleep(1100L);
-
-		loginPage.refreshToken(firstToken);
-		try
-		{
-			loginPage.refreshToken(firstToken);
-			fail("Should've thrown BadRequestException");
-		}
-		catch (BadRequestException ignored)
-		{
-		}
-	}
-
-	/*
-		I know this is ugly, dont kill me
-		so, we need to refresh quick enough so that we get the same token
-		this is possible since there is no randomness to tokens, so if we create one in the same milisecond
-		the expiration will be the same and the tokens will be identical
-	 */
-	@Test(timeout = 10000)
-	public void shouldNotBlacklistOldTokenWhenReturningSameTokenWhenRefreshing() throws Exception
-	{
-		RawToken firstToken;
-		RawToken sameToken;
-		do
-		{
-			firstToken = loginPage.login(EXISTING_USER, EXISTING_USER_PASSWORD);
-			sameToken = loginPage.refreshToken(firstToken);
-		}
-		while (!firstToken.equals(sameToken));
-
-		Thread.sleep(1100L);
-
-		final RawToken newToken = loginPage.refreshToken(firstToken);
-
-		assertThat(firstToken.stringValue()).isNotEqualTo(newToken.stringValue());
-	}
-
-	@Test
-	public void shouldBlacklistTokenWhenLoggingOut() throws Exception
-	{
-		final RawToken token = loginPage.login(EXISTING_USER, EXISTING_USER_PASSWORD);
-		final LogoutResponse response = loginPage.logout(token);
-		assertThat(response.getResult()).isEqualTo(LogoutResponse.Result.OK);
-		try
-		{
-			loginPage.refreshToken(token);
-			fail("Should've thrown BadRequestException");
-		}
-		catch (BadRequestException ignored)
-		{
-		}
-	}
-
-	@Test
 	public void shouldBeAbleToAccessTheAnyoneMethodWithoutLogginIn() throws Exception
 	{
 		final AccessControlledResource.Response result = controlledPage.anyone(Optional.empty());
@@ -201,15 +139,6 @@ public class IntegrationTest
 	public void shouldNotBeAbleToAccessTheLoggedInMethodWhenNotLoggedIn() throws Exception
 	{
 		controlledPage.loggedIn(Optional.empty());
-	}
-
-	@Test(expected = ForbiddenException.class)
-	public void shouldNotBeAbleToAccessTheLoggedInMethodWithABlackListedToken() throws Exception
-	{
-		final RawToken token = loginPage.login(EXISTING_USER, EXISTING_USER_PASSWORD);
-		loginPage.logout(token);
-
-		controlledPage.loggedIn(Optional.of(token));
 	}
 
 	@Test

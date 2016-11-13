@@ -17,7 +17,6 @@ public class AuthenticationManager
 {
 	private final Logger logger = LoggerFactory.getLogger(getClass());
 	private final UserService userService;
-	private final TokenBlacklist blacklist;
 	private final Duration tokenDuration;
 	private final String secret;
 
@@ -27,7 +26,6 @@ public class AuthenticationManager
 		this.userService = userService;
 		this.tokenDuration = tokenDuration;
 		this.secret = secret;
-		this.blacklist = new TokenBlacklist();
 	}
 
 	public Optional<RawToken> login(String username, String password)
@@ -66,12 +64,6 @@ public class AuthenticationManager
 	public Optional<RawToken> refreshToken(RawToken rawToken)
 	{
 		final Token token = parseToken(rawToken);
-		if (blacklist.isBlacklisted(rawToken))
-		{
-			logger.debug("Token {} is blacklisted", rawToken);
-			//todo maybe have a more explicit "TokenBlacklistedException"?
-			return Optional.empty();
-		}
 		try
 		{
 			final Map<String, Object> claims = new JWTVerifier(secret).verify(rawToken.stringValue());
@@ -84,25 +76,6 @@ public class AuthenticationManager
 		//todo think more about this, is this enough validation?
 
 		final Optional<RawToken> maybeNewToken = generateToken(token.getUsername(), new Role(token.getRole()));
-		maybeNewToken.ifPresent(newToken -> blackListIfNotEqual(rawToken, newToken));
 		return maybeNewToken;
-	}
-
-	private void blackListIfNotEqual(RawToken token, RawToken newToken)
-	{
-		if (!token.equals(newToken))
-		{
-			blacklist.blacklist(token);
-		}
-	}
-
-	public void logout(RawToken token)
-	{
-		blacklist.blacklist(token);
-	}
-
-	public boolean isBlackListed(RawToken token)
-	{
-		return blacklist.isBlacklisted(token);
 	}
 }

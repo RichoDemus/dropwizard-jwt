@@ -6,7 +6,6 @@ import com.richodemus.dropwizard.jwt.helpers.UserServiceImpl;
 import com.richodemus.dropwizard.jwt.helpers.model.CreateUserRequest;
 import com.richodemus.dropwizard.jwt.helpers.model.CreateUserResponse;
 import com.richodemus.dropwizard.jwt.helpers.model.LoginRequest;
-import com.richodemus.dropwizard.jwt.helpers.model.LogoutResponse;
 import com.richodemus.dropwizard.jwt.model.Role;
 
 import javax.servlet.http.HttpServletRequest;
@@ -18,7 +17,6 @@ import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
-import java.util.Optional;
 
 @Path("users")
 @Consumes(MediaType.APPLICATION_JSON)
@@ -58,17 +56,5 @@ public class UserResource
 		final RawToken rawToken = new RawToken(request.getHeader("x-token-jwt"));
 		return authenticationManager.refreshToken(rawToken)
 				.orElseThrow(BadRequestException::new);
-	}
-
-	@POST
-	@Path("logout")
-	public LogoutResponse logout(@Context HttpServletRequest request)
-	{
-		final RawToken token = Optional.ofNullable(request.getHeader("x-token-jwt"))
-				.map(RawToken::new)
-				.orElseThrow(ForbiddenException::new);
-
-		authenticationManager.logout(token);
-		return new LogoutResponse(LogoutResponse.Result.OK);
 	}
 }

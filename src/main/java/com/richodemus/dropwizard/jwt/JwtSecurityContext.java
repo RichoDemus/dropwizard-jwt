@@ -44,13 +44,6 @@ public class JwtSecurityContext implements SecurityContext
 			return false;
 		}
 
-		//Todo it feels like this shouldn't be here...
-		if (authenticationManager.isBlackListed(maybeRawToken.get()))
-		{
-			logger.warn("Token {} is blacklisted", maybeToken.get());
-			return false;
-		}
-
 		if (role.equals("any"))
 		{
 			logger.debug("all logged in users are considered to be of role any");
