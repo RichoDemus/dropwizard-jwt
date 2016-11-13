@@ -1,4 +1,5 @@
 # dropwizard-jwt
+[![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.richodemus.dropwizard-jwt/dropwizard-jwt/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.richodemus.dropwizard-jwt/dropwizard-jwt)  
 JSON Web Token support in Dropwizard using the javax security annotations
 
 ## Using
