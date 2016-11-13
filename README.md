@@ -5,19 +5,15 @@ JSON Web Token support in Dropwizard using the javax security annotations
 ### Maven
 ```
 <dependency>
-  <groupId>com.github.RichoDemus</groupId>
+  <groupId>com.richodemus.dropwizard-jwt</groupId>
   <artifactId>dropwizard-jwt</artifactId>
-  <version>prerelease</version>
+  <version>1.0.0</version>
 </dependency>
-
-<repositories>
-  <repository>
-	<id>jitpack.io</id>
-	<url>https://jitpack.io</url>
-  </repository>
-</repositories>
 ```
-    
+### Gradle
+```
+compile 'com.richodemus.dropwizard-jwt:dropwizard-jwt:1.0.0'
+```
 ### Examples
 look at the examples, I'm to lazy to write doc right now :)
 
