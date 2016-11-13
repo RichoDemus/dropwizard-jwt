@@ -44,12 +44,12 @@ public class TokenParser
 
 			final Object asd = verify.get(field);
 
-			if(!verify.containsKey(field))
+			if (!verify.containsKey(field))
 			{
 				return "";
 			}
 
-			if(asd instanceof String)
+			if (asd instanceof String)
 			{
 				return (String) asd;
 			}

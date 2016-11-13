@@ -70,7 +70,7 @@ public class AuthenticationManager
 
 			//todo set all the other fields such as issuer
 			final JWTSigner.Options options = new JWTSigner.Options();
-			options.setExpirySeconds((int)tokenDuration.getSeconds());
+			options.setExpirySeconds((int) tokenDuration.getSeconds());
 			return Optional.of(new RawToken(signer.sign(claims, options)));
 		}
 		catch (Exception e)

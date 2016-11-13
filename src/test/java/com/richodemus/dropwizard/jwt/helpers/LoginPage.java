@@ -16,7 +16,7 @@ public class LoginPage
 	{
 		this.port = port;
 	}
-	
+
 	public CreateUserResponse createUser(String expectedRole, String nonExistingUser, String nonExistingUserPassword)
 	{
 		return ClientBuilder.newClient()
