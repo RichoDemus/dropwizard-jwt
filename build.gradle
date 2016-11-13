@@ -1,0 +1,49 @@
+apply plugin: 'java'
+apply plugin: 'ca.cutterslade.analyze'
+apply plugin: 'com.github.ben-manes.versions'
+apply from: "$rootProject.projectDir/dependencies.gradle"
+
+defaultTasks 'build'
+
+repositories {
+    jcenter()
+}
+
+dependencies {
+    compile "org.slf4j:slf4j-api:$rootProject.slf4jVersion"
+
+    compile "javax.ws.rs:javax.ws.rs-api:$rootProject.javaxWsRsApiVersion"
+    compile "javax.annotation:javax.annotation-api:$rootProject.javaxAnnotationApiVersion"
+    compile "javax.inject:javax.inject:1"
+
+    compile "com.auth0:java-jwt:$rootProject.jwtVersion"
+    compile "com.fasterxml.jackson.core:jackson-annotations:$rootProject.jacksonVersion"
+    compile "com.google.guava:guava:$rootProject.guavaVersion"
+
+    testCompile "junit:junit:$rootProject.junitVersion"
+    testCompile "org.assertj:assertj-core:$rootProject.assertjVersion"
+
+    testCompile "io.dropwizard:dropwizard-jersey:$rootProject.dropwizardVersion"
+    testCompile "io.dropwizard:dropwizard-core:$rootProject.dropwizardVersion"
+    testCompile "io.dropwizard:dropwizard-testing:$rootProject.dropwizardVersion"
+
+    testCompile "javax.servlet:javax.servlet-api:$rootProject.javaxServletApiVersion"
+    testCompile "org.glassfish.jersey.core:jersey-server:$rootProject.jerseyVersion"
+}
+
+buildscript {
+    apply from: "$rootProject.projectDir/dependencies.gradle"
+    repositories {
+        jcenter()
+    }
+    dependencies {
+        classpath "com.github.ben-manes:gradle-versions-plugin:$rootProject.gradleVersionsPluginVersion"
+        classpath "ca.cutterslade.gradle:gradle-dependency-analyze:$rootProject.gradleDependencyAnalyzePluginVersion"
+    }
+}
+
+gradle.projectsEvaluated {
+    tasks.withType(JavaCompile) {
+        options.compilerArgs << "-Xlint:all" << "-Werror"
+    }
+}
