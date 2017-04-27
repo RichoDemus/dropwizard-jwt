@@ -3,6 +3,7 @@ apply plugin: 'ca.cutterslade.analyze'
 apply plugin: 'com.github.ben-manes.versions'
 apply plugin: 'signing'
 apply plugin: 'maven'
+apply plugin: "net.ossindex.audit"
 apply from: "$rootProject.projectDir/dependencies.gradle"
 
 defaultTasks 'build'
@@ -36,10 +37,14 @@ buildscript {
     apply from: "$rootProject.projectDir/dependencies.gradle"
     repositories {
         jcenter()
+        maven {
+           url "https://plugins.gradle.org/m2/"
+         }
     }
     dependencies {
         classpath "com.github.ben-manes:gradle-versions-plugin:$rootProject.gradleVersionsPluginVersion"
         classpath "ca.cutterslade.gradle:gradle-dependency-analyze:$rootProject.gradleDependencyAnalyzePluginVersion"
+        classpath "gradle.plugin.net.ossindex:ossindex-gradle-plugin:0.1.0"
     }
 }
 
