@@ -7,6 +7,8 @@ import com.richodemus.dropwizard.jwt.helpers.UserServiceImpl;
 import com.richodemus.dropwizard.jwt.helpers.model.CreateUserRequest;
 import com.richodemus.dropwizard.jwt.helpers.model.CreateUserResponse;
 import com.richodemus.dropwizard.jwt.helpers.model.LoginRequest;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.BadRequestException;
@@ -25,6 +27,7 @@ import java.util.Map;
 @Produces(MediaType.APPLICATION_JSON)
 public class UserResource
 {
+	private final Logger logger = LoggerFactory.getLogger(getClass());
 	private final AuthenticationManager authenticationManager;
 	private final UserServiceImpl userService;
 
@@ -38,6 +41,7 @@ public class UserResource
 	@Path("/login")
 	public RawToken login(LoginRequest loginRequest)
 	{
+		logger.info("Login");
 		return authenticationManager.login(loginRequest.getUsername(), loginRequest.getPassword())
 				.orElseThrow(ForbiddenException::new);
 	}

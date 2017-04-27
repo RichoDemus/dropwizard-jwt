@@ -24,6 +24,9 @@ look at the examples, I'm to lazy to write doc right now :)
 ```
 ./gradlew
 ```
+
+### Running dependency vulnerability audit
+`./gradlew audit`
     
 ### Finding outdated dependencies
 ```

@@ -6,7 +6,7 @@ apply plugin: 'maven'
 apply plugin: "net.ossindex.audit"
 apply from: "$rootProject.projectDir/dependencies.gradle"
 
-defaultTasks 'build'
+defaultTasks 'check'
 
 repositories {
     jcenter()
