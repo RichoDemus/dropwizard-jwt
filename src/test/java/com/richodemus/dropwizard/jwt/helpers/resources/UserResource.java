@@ -2,11 +2,11 @@ package com.richodemus.dropwizard.jwt.helpers.resources;
 
 import com.richodemus.dropwizard.jwt.AuthenticationManager;
 import com.richodemus.dropwizard.jwt.RawToken;
+import com.richodemus.dropwizard.jwt.TokenCreationCommand;
 import com.richodemus.dropwizard.jwt.helpers.UserServiceImpl;
 import com.richodemus.dropwizard.jwt.helpers.model.CreateUserRequest;
 import com.richodemus.dropwizard.jwt.helpers.model.CreateUserResponse;
 import com.richodemus.dropwizard.jwt.helpers.model.LoginRequest;
-import com.richodemus.dropwizard.jwt.model.Role;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.BadRequestException;
@@ -17,6 +17,8 @@ import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
+import java.util.HashMap;
+import java.util.Map;
 
 @Path("users")
 @Consumes(MediaType.APPLICATION_JSON)
@@ -44,7 +46,10 @@ public class UserResource
 	@Path("/new")
 	public CreateUserResponse createUser(CreateUserRequest createUserRequest)
 	{
-		userService.createUser(createUserRequest.getUsername(), createUserRequest.getPassword(), new Role(createUserRequest.getRole()));
+		final Map<String, Object> claims = new HashMap<>();
+		claims.put("specific-claim", "cool-value");
+		final TokenCreationCommand tokenCreationCommand = new TokenCreationCommand("richo", createUserRequest.getRole(), claims);
+		userService.createUser(createUserRequest.getUsername(), createUserRequest.getPassword(), tokenCreationCommand);
 		return new CreateUserResponse(CreateUserResponse.Result.OK);
 	}
 

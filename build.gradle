@@ -20,7 +20,6 @@ dependencies {
 
     compile "com.auth0:java-jwt:$rootProject.jwtVersion"
     compile "com.fasterxml.jackson.core:jackson-annotations:$rootProject.jacksonVersion"
-    compile "com.google.guava:guava:$rootProject.guavaVersion"
 
     testCompile "junit:junit:$rootProject.junitVersion"
     testCompile "org.assertj:assertj-core:$rootProject.assertjVersion"

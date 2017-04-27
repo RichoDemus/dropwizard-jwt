@@ -1,65 +1,28 @@
 package com.richodemus.dropwizard.jwt;
 
-import com.auth0.jwt.internal.com.fasterxml.jackson.annotation.JsonIgnore;
-import com.google.common.base.MoreObjects;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
-import java.util.Objects;
+import java.util.HashMap;
+import java.util.Map;
 
-public class Token
+public class Token extends HashMap<String, Object>
 {
-	private final String username;
-	private final String role;
-	private final String expiration;
+	private static final long serialVersionUID = 1L;
 
-	public Token(String username, String role, String expiration)
+	public Token(final Map<String, Object> claims)
 	{
-		this.username = username;
-		this.role = role;
-		this.expiration = expiration;
+		super(claims);
 	}
 
 	@JsonIgnore
 	public String getUsername()
 	{
-		return username;
+		return String.valueOf(get("username"));
 	}
 
 	@JsonIgnore
 	public String getRole()
 	{
-		return role;
-	}
-
-	@Override
-	public boolean equals(Object o)
-	{
-		if (this == o)
-		{
-			return true;
-		}
-		if (o == null || getClass() != o.getClass())
-		{
-			return false;
-		}
-		Token token = (Token) o;
-		return Objects.equals(username, token.username) &&
-				Objects.equals(role, token.role) &&
-				Objects.equals(expiration, token.expiration);
-	}
-
-	@Override
-	public int hashCode()
-	{
-		return Objects.hash(username, role, expiration);
-	}
-
-	@Override
-	public String toString()
-	{
-		return MoreObjects.toStringHelper(this)
-				.add("username", username)
-				.add("role", role)
-				.add("expiration", expiration)
-				.toString();
+		return String.valueOf(get("role"));
 	}
 }

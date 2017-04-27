@@ -12,7 +12,7 @@ public class TokenUtil
 	/**
 	 * Normal token except it has no expiration date, the secret is secret_used_for_testing
 	 */
-	public static final RawToken VALID_ADMIN_JWT_TOKEN = new RawToken("eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyIjoidXNlcm5hbWUiLCJyb2xlIjoiYWRtaW4ifQ.4A96ZeAOjDVeDjgJ5jPBYz9uZkPKymXCEalU-fy1naI");
+	public static final RawToken VALID_ADMIN_JWT_TOKEN = new RawToken("eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VybmFtZSI6InVzZXJuYW1lIiwicm9sZSI6ImFkbWluIn0.U9MLrWAT9gFDStz_t3hRR-YKDpFixu04-qGy7r1dDYU");
 
 	/**
 	 * Normal token except it has no expiration date, the secret is secret_used_for_testing

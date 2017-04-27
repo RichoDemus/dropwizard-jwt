@@ -1,7 +1,7 @@
 package com.richodemus.dropwizard.jwt.helpers;
 
+import com.richodemus.dropwizard.jwt.TokenCreationCommand;
 import com.richodemus.dropwizard.jwt.UserService;
-import com.richodemus.dropwizard.jwt.model.Role;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -17,29 +17,29 @@ public class UserServiceImpl implements UserService
 	}
 
 	@Override
-	public Optional<Role> login(String username, String password)
+	public Optional<TokenCreationCommand> login(String username, String password)
 	{
 		return Optional.ofNullable(users.get(username))
 				.filter(u -> u.password.equals(password))
-				.map(u -> u.role);
+				.map(u -> u.tokenCreationCommand);
 	}
 
-	public void createUser(String username, String password, Role role)
+	public void createUser(String username, String password, TokenCreationCommand tokenCreationCommand)
 	{
-		users.put(username, new User(username, password, role));
+		users.put(username, new User(username, password, tokenCreationCommand));
 	}
 
 	private class User
 	{
 		final String username;
 		final String password;
-		final Role role;
+		final TokenCreationCommand tokenCreationCommand;
 
-		private User(String username, String password, Role role)
+		private User(String username, String password, TokenCreationCommand tokenCreationCommand)
 		{
 			this.username = username;
 			this.password = password;
-			this.role = role;
+			this.tokenCreationCommand = tokenCreationCommand;
 		}
 	}
 }

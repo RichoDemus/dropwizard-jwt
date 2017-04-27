@@ -17,47 +17,24 @@ public class TokenParser
 
 	public Token parse()
 	{
-		return new Token(getUsername(), getRole(), getExpiration());
-	}
-
-	private String getUsername()
-	{
-		return get("user");
-	}
-
-	private String getRole()
-	{
-		return get("role");
-	}
-
-	private String getExpiration()
-	{
-		return get("exp");
-	}
-
-	//todo rewrite this and getInt
-	private String get(String field)
-	{
 		try
 		{
-			final Map<String, Object> verify = new JWTVerifier(secret).verify(raw.stringValue());
-
-			final Object asd = verify.get(field);
-
-			if (!verify.containsKey(field))
-			{
-				return "";
-			}
-
-			if (asd instanceof String)
-			{
-				return (String) asd;
-			}
-			return String.valueOf(asd);
+			final Map<String, Object> claims = new JWTVerifier(secret).verify(raw.stringValue());
+			return new Token(claims);
 		}
 		catch (Exception e)
 		{
 			throw new IllegalStateException(e);
 		}
+	}
+
+	private String parseExpiration(Map<String, Object> claims)
+	{
+		final Object exp = claims.get("exp");
+		if (exp == null)
+		{
+			throw new IllegalStateException("no expiration field in token");
+		}
+		return String.valueOf(exp);
 	}
 }

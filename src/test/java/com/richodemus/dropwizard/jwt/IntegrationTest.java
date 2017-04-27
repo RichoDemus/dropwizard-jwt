@@ -7,7 +7,6 @@ import com.richodemus.dropwizard.jwt.helpers.dropwizard.TestApp;
 import com.richodemus.dropwizard.jwt.helpers.dropwizard.TestConfiguration;
 import com.richodemus.dropwizard.jwt.helpers.model.CreateUserResponse;
 import com.richodemus.dropwizard.jwt.helpers.resources.AccessControlledResource;
-import com.richodemus.dropwizard.jwt.model.Role;
 import io.dropwizard.testing.DropwizardTestSupport;
 import io.dropwizard.testing.ResourceHelpers;
 import org.junit.After;
@@ -24,7 +23,7 @@ public class IntegrationTest
 {
 	private static final String EXISTING_USER = "existing_user";
 	private static final String EXISTING_USER_PASSWORD = "existing_user_password";
-	private static final Role EXISTING_USER_ROLE = new Role("user");
+	private static final TokenCreationCommand EXISTING_USER_TOKEN_CREATION_COMMAND = new TokenCreationCommand(EXISTING_USER, "user");
 
 	private static final String NON_EXISTING_USER = "non_existing_user";
 	private static final String NON_EXISTING_USER_PASSWORD = "non_existing_user_password";
@@ -41,7 +40,7 @@ public class IntegrationTest
 		target.before();
 		loginPage = new LoginPage(target.getLocalPort());
 		controlledPage = new AccessControlledPage(target.getLocalPort());
-		final CreateUserResponse result = loginPage.createUser(EXISTING_USER_ROLE.stringValue(), EXISTING_USER, EXISTING_USER_PASSWORD);
+		final CreateUserResponse result = loginPage.createUser(String.valueOf(EXISTING_USER_TOKEN_CREATION_COMMAND.get("role")), EXISTING_USER, EXISTING_USER_PASSWORD);
 		assertThat(result.getResult()).isEqualTo(CreateUserResponse.Result.OK);
 	}
 
@@ -60,9 +59,9 @@ public class IntegrationTest
 		assertThat(result.getResult()).isEqualTo(CreateUserResponse.Result.OK);
 
 		final RawToken result2 = loginPage.login(NON_EXISTING_USER, NON_EXISTING_USER_PASSWORD);
-		final Token parsedResult = new TokenParser(Secret.SECRET, result2).parse();
-		assertThat(parsedResult.getUsername()).isEqualTo(NON_EXISTING_USER);
+		final com.richodemus.dropwizard.jwt.Token parsedResult = new TokenParser(Secret.SECRET, result2).parse();
 		assertThat(parsedResult.getRole()).isEqualTo(expectedRole);
+		assertThat(parsedResult.get("specific-claim")).isEqualTo("cool-value");
 	}
 
 	@Test(expected = ForbiddenException.class)
@@ -75,7 +74,6 @@ public class IntegrationTest
 	public void shouldThrowBadRequestExceptionWhenRefreshingUsingAnInvalidToken() throws Exception
 	{
 		loginPage.refreshToken(new RawToken("invalidino tokenirino cappuchino"));
-
 	}
 
 	@Test
